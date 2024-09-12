@@ -189,7 +189,7 @@ bool get_shared_object( shared_memory_t* shm, const char* share_name ) {
     // shm->fd. If the operation fails, ensure that shm->data is 
     // NULL and return false.
     // INSERT SOLUTION HERE
-    shm->fd = shm_open(share_name, O_RDWR, 0666);
+    shm->fd = shm_open(share_name, O_RDWR, 0666); // "0666" grants read and write permissions
     if (shm->fd < 0) {
         shm->data = NULL;
         return false;
@@ -241,6 +241,31 @@ bool do_work( shared_memory_t* shm ) {
     // Update the value of local variable retVal and/or shm->data->result
     // as required.
     // INSERT IMPLEMENTATION HERE
+    switch (shm->data->operation) {
+        case op_add:
+            shm->data->result = shm->data->lhs + shm->data->rhs;
+            break;
+        case op_sub:
+            shm->data->result = shm->data->lhs - shm->data->rhs;
+            break;
+        case op_mul:
+            shm->data->result = shm->data->lhs * shm->data->rhs;
+            break;
+        case op_div:
+            if (shm->data->rhs != 0) {
+                shm->data->result = shm->data->lhs / shm->data->rhs;
+            } else {
+                shm->data->result = 0;
+            }
+            break;
+        case op_quit:
+            retVal = false;
+            break;
+        default:
+            shm->data->result = 0;
+            break;
+
+    }
 
     // Do not alter the following instruction which send the result back to the
     // controller.
@@ -250,6 +275,11 @@ bool do_work( shared_memory_t* shm ) {
     // done _after_ posting the semaphore. Un-map the shared data, and assign
     // values to shm->data and shm-fd as noted above.
     // INSERT IMPLEMENTATION HERE
+     if (!retVal) {
+        munmap(shm->data, sizeof(shared_data_t));
+        shm->fd = -1;
+        shm->data = NULL;
+    }
 
     // Keep this line to return the result.
     return retVal;
