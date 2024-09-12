@@ -189,10 +189,20 @@ bool get_shared_object( shared_memory_t* shm, const char* share_name ) {
     // shm->fd. If the operation fails, ensure that shm->data is 
     // NULL and return false.
     // INSERT SOLUTION HERE
+    shm->fd = shm_open(share_name, O_RDWR, 0666);
+    if (shm->fd < 0) {
+        shm->data = NULL;
+        return false;
+    }
 
     // Otherwise, attempt to map the shared memory via mmap, and save the address
     // in shm->data. If mapping fails, return false.
     // INSERT SOLUTION HERE
+    shm->data = nmap(0, sizeof(shared_data_t), PROT_READ | PROT_WRITE, MAP_SHARED, shm->fd, 0);
+    if (shm->data == MAP_FAILED) {
+        shm->data = NULL;
+        return false;
+    }
 
     // Modify the remaining stub only if necessary.
     return true;
