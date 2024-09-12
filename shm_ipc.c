@@ -116,6 +116,16 @@ bool create_shared_object( shared_memory_t* shm, const char* share_name ) {
 void destroy_shared_object( shared_memory_t* shm ) {
     // Remove the shared memory object.
     // INSERT SOLUTION HERE
+    // unmap memory
+    munmap(shm->data, sizeof(shared_data_t));
+    
+    // close and remove shared memory object
+    shm_unlink(shm->name);
+
+    // setting file descriptor and data to invalid values
+    shm->fd = -1;
+    shm->data = NULL;
+
 }
 
 /**
